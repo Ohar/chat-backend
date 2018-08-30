@@ -66,7 +66,7 @@ wsServer.on('request', request => {
   let userName   = false
   let userColor  = false
 
-  console.log((new Date()) + ' Connection accepted.')
+  console.log(`${new Date()} Connection accepted.`)
 
   // send back chat history
   if (history.length > 0) {
