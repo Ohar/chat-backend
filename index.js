@@ -25,11 +25,6 @@ function htmlEntities (str) {
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
-// Array with some colors
-const colors = ['red', 'green', 'blue', 'magenta', 'purple', 'plum', 'orange']
-// ... in random order
-colors.sort(() => Math.random() > .5)
-
 /**
  * HTTP server
  */
@@ -64,7 +59,6 @@ wsServer.on('request', request => {
   // we need to know client index to remove them on 'close' event
   const index    = clients.push(connection) - 1
   let userName   = false
-  let userColor  = false
 
   console.log(`${new Date()} Connection accepted.`)
 
@@ -87,17 +81,7 @@ wsServer.on('request', request => {
         // remember user name
         userName  = htmlEntities(message.utf8Data)
 
-        // get random color and send it back to the user
-        userColor = colors.shift()
-
-        connection.sendUTF(
-          JSON.stringify({
-            type: 'color',
-            data: userColor,
-          })
-        )
-
-        console.log(`${new Date()} User is known as: ${userName} with ${userColor} color.`)
+        console.log(`${new Date()} User is known as: ${userName}.`)
 
       } else { // log and broadcast the message
         console.log(`${new Date()} Received Message from ${userName}: ${message.utf8Data}`)
@@ -107,7 +91,6 @@ wsServer.on('request', request => {
           time  : Date.now(),
           text  : htmlEntities(message.utf8Data),
           author: userName,
-          color : userColor,
         }
 
         history.push(obj)
@@ -129,13 +112,11 @@ wsServer.on('request', request => {
   connection.on(
     'close',
     connection => {
-      if (userName !== false && userColor !== false) {
+      if (userName !== false) {
         console.log(`${new Date()} Peer ${connection.remoteAddress} disconnected.`)
 
         // remove user from the list of connected clients
         clients.splice(index, 1)
-        // push back user's color to be reused by another user
-        colors.push(userColor)
       }
     }
   )
