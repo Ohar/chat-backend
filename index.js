@@ -11,8 +11,8 @@ const http            = require('http')
 /**
  * Global variables
  */
-// latest 100 messages
-let history = []
+// All messages
+const history = []
 // list of currently connected clients (users)
 const clients = []
 
@@ -62,7 +62,7 @@ wsServer.on('request', request => {
   // (http://en.wikipedia.org/wiki/Same_origin_policy)
   const connection = request.accept(null, request.origin)
   // we need to know client index to remove them on 'close' event
-  const index      = clients.push(connection) - 1
+  const index    = clients.push(connection) - 1
   let userName   = false
   let userColor  = false
 
@@ -111,7 +111,6 @@ wsServer.on('request', request => {
         }
 
         history.push(obj)
-        history = history.slice(-100)
 
         // broadcast message to all connected clients
         const json = JSON.stringify({
