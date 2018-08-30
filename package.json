@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ."
   },
   "repository": {
     "type": "git",
@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/Ohar/chat-backend/issues"
   },
-  "homepage": "https://github.com/Ohar/chat-backend#readme"
+  "homepage": "https://github.com/Ohar/chat-backend#readme",
+  "dependencies": {
+    "express": "^4.16.3",
+    "websocket": "^1.0.26"
+  }
 }
