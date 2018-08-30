@@ -1,0 +1,19 @@
+{
+  "name": "chat-backend",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ohar/chat-backend.git"
+  },
+  "author": "Pavel Lysenko aka Ohar <code@ohar.name>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Ohar/chat-backend/issues"
+  },
+  "homepage": "https://github.com/Ohar/chat-backend#readme"
+}
