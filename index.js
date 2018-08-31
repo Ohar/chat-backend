@@ -1,29 +1,15 @@
+const http            = require('http')
+const webSocketServer = require('websocket').server
+const clientList      = require('./src/consts/clientList')
+const history         = require('./src/consts/history')
+const messageHandler  = require('./src/handlers/messageHandler')
+const closeHandler    = require('./src/handlers/closeHandler')
+
 // Optional. You will see this name in eg. 'ps' or 'top' command
 process.title = 'node-chat'
 
 // Port where we'll run the websocket server
 const webSocketsServerPort = 1337
-
-// websocket and http servers
-const webSocketServer = require('websocket').server
-const http            = require('http')
-
-/**
- * Global variables
- */
-// All messages
-const history = []
-// list of currently connected clients (users)
-const clients = []
-
-/**
- * Helper function for escaping input strings
- */
-function htmlEntities (str) {
-  return String(str)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-}
 
 /**
  * HTTP server
@@ -49,75 +35,37 @@ const wsServer = new webSocketServer({
 
 // This callback function is called every time someone
 // tries to connect to the WebSocket server
-wsServer.on('request', request => {
-  console.log(`${new Date()} Connection from origin ${request.origin}.`)
+wsServer.on(
+  'request',
+  request => {
+    const user = {name: false}
 
-  // accept connection - you should check 'request.origin' to
-  // make sure that client is connecting from your website
-  // (http://en.wikipedia.org/wiki/Same_origin_policy)
-  const connection = request.accept(null, request.origin)
-  // we need to know client index to remove them on 'close' event
-  const index    = clients.push(connection) - 1
-  let userName   = false
+    console.log(`${new Date()} Connection from origin ${request.origin}.`)
 
-  console.log(`${new Date()} Connection accepted.`)
+    // accept connection - you should check 'request.origin' to
+    // make sure that client is connecting from your website
+    // (http://en.wikipedia.org/wiki/Same_origin_policy)
+    const connection = request.accept(null, request.origin)
 
-  // send back chat history
-  if (history.length > 0) {
-    connection.sendUTF(
-      JSON.stringify({
-        type: 'history',
-        data: history,
-      })
-    )
-  }
+    // we need to know client index to remove them on 'close' event
+    const index = clientList.push(connection) - 1
 
-  // user sent some message
-  connection.on('message', message => {
-    if (message.type === 'utf8') { // accept only text
-      // first message sent by user is their name
+    console.log(`${new Date()} Connection accepted.`)
 
-      if (userName === false) {
-        // remember user name
-        userName  = htmlEntities(message.utf8Data)
-
-        console.log(`${new Date()} User is known as: ${userName}.`)
-
-      } else { // log and broadcast the message
-        console.log(`${new Date()} Received Message from ${userName}: ${message.utf8Data}`)
-
-        // we want to keep history of all sent messages
-        const obj = {
-          time  : Date.now(),
-          text  : htmlEntities(message.utf8Data),
-          author: userName,
-        }
-
-        history.push(obj)
-
-        // broadcast message to all connected clients
-        const json = JSON.stringify({
-          type: 'message',
-          data: obj,
-        })
-
-        clients.forEach(
-          client => client.sendUTF(json)
-        )
-      }
+    // send back chat history
+    if (history.length > 0) {
+      connection.sendUTF(
+        JSON.stringify({
+          type: 'history',
+          data: history,
+        }),
+      )
     }
-  })
 
-  // user disconnected
-  connection.on(
-    'close',
-    connection => {
-      if (userName !== false) {
-        console.log(`${new Date()} Peer ${connection.remoteAddress} disconnected.`)
+    // user sent some message
+    connection.on('message', messageHandler(user))
 
-        // remove user from the list of connected clients
-        clients.splice(index, 1)
-      }
-    }
-  )
-})
+    // user disconnected
+    connection.on('close', closeHandler({connection, index}))
+  },
+)

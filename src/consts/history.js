@@ -1,0 +1,2 @@
+// All messages
+module.exports = []
